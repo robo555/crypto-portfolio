@@ -1,6 +1,6 @@
 package com.lightbend.akka.http.sample
 
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.{ActorRef, ActorSystem}
 import akka.event.Logging
 
 import scala.concurrent.duration._
@@ -35,7 +35,7 @@ trait UserRoutes extends JsonSupport {
 
   //#all-routes
   //#users-get-post
-  //#users-get-delete   
+  //#users-get-delete
   lazy val userRoutes: Route =
     pathPrefix("users") {
       concat(
@@ -48,13 +48,17 @@ trait UserRoutes extends JsonSupport {
               complete(users)
             },
             post {
-              entity(as[User]) { user =>
-                val userCreated: Future[ActionPerformed] =
-                  (userRegistryActor ? CreateUser(user)).mapTo[ActionPerformed]
-                onSuccess(userCreated) { performed =>
-                  log.info("Created user [{}]: {}", user.name, performed.description)
-                  complete((StatusCodes.Created, performed))
-                }
+              entity(as[User]) {
+                user =>
+                  val userCreated: Future[ActionPerformed] =
+                    (userRegistryActor ? CreateUser(user))
+                      .mapTo[ActionPerformed]
+                  onSuccess(userCreated) { performed =>
+                    log.info("Created user [{}]: {}",
+                             user.name,
+                             performed.description)
+                    complete((StatusCodes.Created, performed))
+                  }
               }
             }
           )
