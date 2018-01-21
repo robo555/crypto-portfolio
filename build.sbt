@@ -6,23 +6,26 @@ lazy val root = (project in file(".")).settings(
     )),
   name := "Crypto Portfolio",
   libraryDependencies ++= {
-    lazy val akkaHttpVersion = "10.0.11"
-    lazy val akkaVersion = "2.5.9"
+    lazy val AkkaHttpVersion = "10.0.11"
+    lazy val AkkaVersion = "2.5.9"
+    lazy val ScalaTestVersion = "3.0.4"
     Seq(
-      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-http-xml" % akkaHttpVersion,
-      "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+      "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-http-xml" % AkkaHttpVersion,
+      "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "org.typelevel" %% "cats-core" % "1.0.1",
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
-      "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-      "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
-      "org.scalatest" %% "scalatest" % "3.0.1" % Test
+      "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
+      "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % Test,
+      "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % Test,
+      "org.scalactic" %% "scalactic" % ScalaTestVersion, // use by ScalaTest, but project can use it too
+      "org.scalatest" %% "scalatest" % ScalaTestVersion % Test
     )
   }
 )
 
 scalacOptions ++= Seq(
+  "-feature",
   "-language:higherKinds",
   "-Ypartial-unification"
 )

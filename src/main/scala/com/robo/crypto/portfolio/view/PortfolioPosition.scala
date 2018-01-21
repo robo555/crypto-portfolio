@@ -29,12 +29,12 @@ final class PortfolioPositionSync[F[_]](implicit M: Monad[F],
     for {
       storages <- sources.getAll
       balances = storages.map(storage => storage.balances)
-      grouped = groupBalancesByCoin(balances)
-      equities = getEquities(grouped)
+      summed = sumBalancesByCoin(balances)
+      equities = getEquities(summed)
     } yield PortfolioPosition(equities)
   }
 
-  def groupBalancesByCoin(
+  def sumBalancesByCoin(
       balances: Seq[Seq[CoinBalance]]): Map[Coin, Quantity] = {
     balances.flatten.groupBy(_.coin).mapValues(sumBalances)
   }
