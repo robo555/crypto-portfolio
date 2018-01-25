@@ -1,21 +1,13 @@
 package com.robo.crypto.portfolio.view
 
-import javax.net.ssl.{SSLContext, SSLParameters}
-
-import akka.http.scaladsl.HttpsConnectionContext
-import akka.stream.TLSClientAuth
-import com.typesafe.sslconfig.akka.AkkaSSLConfig
 import org.scalatest.{FlatSpec, Matchers}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
+import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Milliseconds, Span}
 
-/**
-  * Created by rcheng on 18/01/18.
-  */
 class BinanceServiceSpec extends FlatSpec with ScalaFutures with Matchers {
-  private val DefaultTimeoutMilliseconds = 200L
-  private val defaultTimeout = Timeout(
+  private val DefaultTimeoutMilliseconds = 10000L
+  private val DefaultTimeout = Timeout(
     Span(DefaultTimeoutMilliseconds, Milliseconds))
 
   trait TestData {
@@ -27,19 +19,18 @@ class BinanceServiceSpec extends FlatSpec with ScalaFutures with Matchers {
     val binance: ExchangeService = new BinanceService(conf)
   }
 
-  def https(
-             sslContext:          SSLContext,
-             sslConfig:           Option[AkkaSSLConfig]         = None,
-             enabledCipherSuites: Option[Seq[String]] = None,
-             enabledProtocols:    Option[Seq[String]] = None,
-             clientAuth:          Option[TLSClientAuth]         = None,
-             sslParameters:       Option[SSLParameters]         = None) =
-    new HttpsConnectionContext(sslContext)
-
   "ping" should "return successfully" in new TestData {
-    whenReady(binance.ping, defaultTimeout, Interval(Span(200, Milliseconds))) {
-      _ =>
-        ()
+    whenReady(binance.ping, DefaultTimeout) { _ =>
+      ()
+    }
+  }
+
+  "getAccount" should "return successfully using correct account key" in new TestData {
+    whenReady(binance.getAccount, DefaultTimeout) { response =>
+      response match {
+        case Right(acct) => println(acct.accountId)
+        case Left(error) => assert(false, error)
+      }
     }
   }
 }

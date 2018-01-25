@@ -1,14 +1,16 @@
 package com.robo.crypto.portfolio.view
 
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{ConnectionContext, Http}
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.headers.RawHeader
 import java.time.Instant
 import javax.crypto.spec.SecretKeySpec
 import javax.crypto.Mac
+import javax.net.ssl.SSLContext
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.ActorMaterializer
 
 import scala.concurrent.Future
@@ -33,19 +35,20 @@ object Hex {
 }
 
 class BinanceService(conf: ExchangeConfig) extends ExchangeService {
-  val ApiKeyHeader = "X-MBX-APIKEY"
+  private val ApiKeyHeader = "X-MBX-APIKEY"
 
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  private implicit val system = ActorSystem()
+  private implicit val materializer = ActorMaterializer()
+  //private val httpsContext = ConnectionContext.https(SSLContext.getDefault)
 
   def ping: Future[Unit] = {
     val uri = conf.host + "/api/v1/ping"
-    println(uri)
     val request = HttpRequest(GET, uri)
+
+    //Http().setDefaultClientHttpsContext(httpsContext)
     val responseFuture: Future[HttpResponse] = Http().singleRequest(request)
 
     responseFuture.map(_ => {
-      println("ping finished")
       ()
     })
   }
@@ -54,21 +57,20 @@ class BinanceService(conf: ExchangeConfig) extends ExchangeService {
     //GET /api/v3/account (HMAC SHA256)
     val uri = conf.host + "/api/v3/account"
     val query = s"timestamp=${getTimestamp}"
-    val signedQuery = sign(query, conf.secretKey)
-    val entity = HttpEntity(signedQuery)
+    val signature = sign(query, conf.secretKey)
+    val signedQuery = s"${query}&signature=${signature}"
 
-    val request = HttpRequest(GET, uri)
+    val request = HttpRequest(GET, Uri(uri).withRawQueryString(signedQuery))
       .withHeaders(RawHeader(ApiKeyHeader, conf.apiKey))
-      .withEntity(entity)
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(request)
+    val futureResponse: Future[HttpResponse] = Http().singleRequest(request)
 
-    responseFuture.map(response => {
-      println(response.entity.toString)
-      Right(ExchangeAccount(response.entity.toString, Seq.empty))
-    })
-//    responseFuture.recover {
-//      case thrown: Throwable => Left(thrown.getMessage)
-//    }
+    // TODO: check for error code
+    for {
+      response <- futureResponse
+      str <- Unmarshal(response.entity).to[String]
+    } yield {
+      Right(ExchangeAccount(str, Seq.empty))
+    }
   }
 
   def getTimestamp: Long = {

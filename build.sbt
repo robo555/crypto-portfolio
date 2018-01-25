@@ -6,15 +6,19 @@ lazy val root = (project in file(".")).settings(
     )),
   name := "Crypto Portfolio",
   libraryDependencies ++= {
-    lazy val AkkaHttpVersion = "10.0.11"
-    lazy val AkkaVersion = "2.5.9"
-    lazy val ScalaTestVersion = "3.0.4"
+    val AkkaHttpVersion = "10.0.11"
+    val AkkaVersion = "2.5.9"
+    val ScalaTestVersion = "3.0.4"
+    val CirceVersion = "0.9.0"
     Seq(
       "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-xml" % AkkaHttpVersion,
       "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
       "org.typelevel" %% "cats-core" % "1.0.1",
+      "io.circe" %% "circe-core" % CirceVersion,
+      "io.circe" %% "circe-generic" % CirceVersion,
+      "io.circe" %% "circe-parser" % CirceVersion,
       "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
       "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % Test,
       "com.typesafe.akka" %% "akka-stream-testkit" % AkkaVersion % Test,
